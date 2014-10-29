@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CleanCollections
 {
@@ -40,9 +37,14 @@ namespace CleanCollections
             _subArrays = new T[blocks][];
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public CleanListEnumerator<T> GetEnumerator()
         {
             return new CleanListEnumerator<T>(this, _deletedIndeces);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -73,7 +75,8 @@ namespace CleanCollections
 
             EnsureCapacity();
 
-            int chunkIndex, localIndex;
+            short chunkIndex;
+            int localIndex;
             GetChunkedIndex(count, out chunkIndex, out localIndex);
 
             _subArrays[chunkIndex][localIndex] = item;
@@ -81,9 +84,9 @@ namespace CleanCollections
             return _count;
         }
 
-        private void GetChunkedIndex(int index, out int chunkIndex, out int localIndex)
+        private void GetChunkedIndex(int index, out short chunkIndex, out int localIndex)
         {
-            chunkIndex = LogDeBruijn((int) ((index + _blockSize) / (double)_blockSize));
+            chunkIndex = (short) LogDeBruijn((int) ((index + _blockSize) / (double)_blockSize));
             var startIndex = (_blockSize << chunkIndex) - _blockSize;
             localIndex = index - startIndex;
         }
@@ -144,7 +147,7 @@ namespace CleanCollections
 
         public void RemoveAt(int index)
         {
-            int chunkIndex;
+            short chunkIndex;
             int localIndex;
             GetChunkedIndex(index, out chunkIndex, out localIndex);
             _deletedIndeces.Enqueue(new ChunkedIndex(chunkIndex, localIndex, index));
@@ -157,14 +160,16 @@ namespace CleanCollections
             get
             {
                 CheckIndex(index);
-                int chunkIndex, localIndex;
+                short chunkIndex;
+                int localIndex;
                 GetChunkedIndex(index, out chunkIndex, out localIndex);
                 return _subArrays[chunkIndex][localIndex];
             }
             set
             {
                 CheckIndex(index);
-                int chunkIndex, localIndex;
+                short chunkIndex;
+                int localIndex;
                 GetChunkedIndex(index, out chunkIndex, out localIndex);
                 _subArrays[chunkIndex][localIndex] = value;
             }

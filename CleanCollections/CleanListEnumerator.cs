@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CleanCollections
 {
-    internal struct CleanListEnumerator<T> : IEnumerator<T>
+    public struct CleanListEnumerator<T> : IEnumerator<T>
     {
         private readonly IList<T> _list;
         private T _current;
@@ -11,7 +11,7 @@ namespace CleanCollections
         private Queue<ChunkedIndex>.Enumerator _deletedEnumerator;
         private bool _hasMoreDeletedItems;
 
-        public CleanListEnumerator(IList<T> list, Queue<ChunkedIndex> deletedIndeces) : this()
+        internal CleanListEnumerator(IList<T> list, Queue<ChunkedIndex> deletedIndeces) : this()
         {
             _list = list;
             _deletedEnumerator = deletedIndeces.GetEnumerator();

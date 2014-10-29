@@ -26,9 +26,14 @@ namespace CleanCollections
             _subArrays = new T[(int) Math.Ceiling((double) maxSize/blockSize)][];
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public CleanListEnumerator<T> GetEnumerator()
         {
             return new CleanListEnumerator<T>(this, _deletedIndeces);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -42,7 +47,8 @@ namespace CleanCollections
 
             EnsureCapacity();
 
-            int chunkIndex, localIndex;
+            short chunkIndex;
+            int localIndex;
             GetChunkedIndex(count, out chunkIndex, out localIndex);
 
             _subArrays[chunkIndex][localIndex] = item;
@@ -65,21 +71,12 @@ namespace CleanCollections
             _capacity += blockSize;
         }
 
-        private ChunkedIndex GetChunkedIndex2(int index)
+        private void GetChunkedIndex(int index, out short chunkIndex, out int localIndex)
         {
-            var chunkIndex = index >> _blockPowerOfTwo;
-            var localIndex = index - (chunkIndex << _blockPowerOfTwo);
-//            var chunkIndex = index / _blockSize;
-//            var localIndex = index - (chunkIndex * _blockSize);
-            return new ChunkedIndex(chunkIndex, localIndex, index);
-        }
-
-        private void GetChunkedIndex(int index, out int chunkIndex, out int localIndex)
-        {
-            chunkIndex = index >> _blockPowerOfTwo;
-            localIndex = index - (chunkIndex << _blockPowerOfTwo);
 //            chunkIndex = index / _blockSize;
 //            localIndex = index - (chunkIndex * _blockSize);
+            chunkIndex = (short)(index >> _blockPowerOfTwo);
+            localIndex = index - (chunkIndex << _blockPowerOfTwo);
         }
 
         public void Add(T item)
@@ -123,7 +120,8 @@ namespace CleanCollections
 
         public void RemoveAt(int index)
         {
-            int chunkIndex, localIndex;
+            short chunkIndex;
+            int localIndex;
             GetChunkedIndex(index, out chunkIndex, out localIndex);
             _deletedIndeces.Enqueue(new ChunkedIndex(chunkIndex, localIndex, index));
             _count--;
@@ -139,14 +137,16 @@ namespace CleanCollections
             get
             {
                 CheckIndex(index);
-                int chunkIndex, localIndex;
+                short chunkIndex;
+                int localIndex;
                 GetChunkedIndex(index, out chunkIndex, out localIndex);
                 return _subArrays[chunkIndex][localIndex];
             }
             set
             {
                 CheckIndex(index);
-                int chunkIndex, localIndex;
+                short chunkIndex;
+                int localIndex;
                 GetChunkedIndex(index, out chunkIndex, out localIndex);
                 _subArrays[chunkIndex][localIndex] = value;
             }

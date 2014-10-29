@@ -43,11 +43,11 @@ namespace CleanCollections
             return localIndexOffset;
         }
 
-        private static int GetChunkIndex(int index, T[][] subArrays, int initialBlockSize)
+        private static short GetChunkIndex(int index, T[][] subArrays, int initialBlockSize)
         {
             if (index < initialBlockSize) return 0;
             if (index <= initialBlockSize + 1) return 1;
-            var chunkIndex = (int) Math.Floor(Math.Log(index, initialBlockSize));
+            var chunkIndex = (short) Math.Floor(Math.Log(index, initialBlockSize));
 
             if (chunkIndex > subArrays.Length) throw new IndexOutOfRangeException();
             return chunkIndex;
@@ -63,9 +63,14 @@ namespace CleanCollections
             subArray[localIndexOffset] = value;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public CleanListEnumerator<T> GetEnumerator()
         {
             return new CleanListEnumerator<T>(this, _deletedIndeces);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -193,20 +198,6 @@ namespace CleanCollections
         private void CheckIndex(int index)
         {
             if (index < (uint)0 || (uint)index > (uint)Count - 1) throw new IndexOutOfRangeException();
-        }
-    }
-
-    struct ChunkedIndex
-    {
-        public readonly int ChunkIndex;
-        public readonly int LocalIndex;
-        public readonly int AbsoluteIndex;
-
-        public ChunkedIndex(int chunkIndex, int localIndex, int absoluteIndex) : this()
-        {
-            ChunkIndex = chunkIndex;
-            LocalIndex = localIndex;
-            AbsoluteIndex = absoluteIndex;
         }
     }
 }
