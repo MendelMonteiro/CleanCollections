@@ -21,7 +21,6 @@ namespace CleanCollections
     public class CleanListDoubling<T> : IIndexedList<T>
     {
         private readonly int _blockSize;
-        private readonly int _maxSize;
         private readonly Queue<ChunkedIndex> _deletedIndeces = new Queue<ChunkedIndex>();
         private int _count;
         private readonly T[][] _subArrays;
@@ -31,7 +30,6 @@ namespace CleanCollections
         public CleanListDoubling(int maxSize, int blockSize)
         {
             _blockSize = blockSize;
-            _maxSize = maxSize;
 
             var blocks = (int)Math.Log((maxSize + blockSize + 1)/(double)blockSize, 2) + 1;
             _subArrays = new T[blocks][];

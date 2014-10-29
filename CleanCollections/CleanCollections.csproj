@@ -70,6 +70,7 @@
     <Compile Include="CleanListEnumerator.cs" />
     <Compile Include="CleanListExponential.cs" />
     <Compile Include="CleanListIncremental.cs" />
+    <Compile Include="CleanQueue.cs" />
     <Compile Include="IIndexedList.cs" />
     <Compile Include="TestSuite.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
