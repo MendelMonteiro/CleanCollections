@@ -7,7 +7,7 @@ namespace CleanCollections.Perf
     {
         static void Main(string[] args)
         {
-            int length = 1024 * 1024 * 8;
+            int length = 1024 * 1024 * 32;
 //            TestSuite.TestList("List", length, new List<int>());
             TestSuite.TestList("Incremental", length, new CleanListIncremental<int>(length, 8192));
 //            TestSuite.TestList("Doubling", length, new CleanListDoubling<int>(length, 4));

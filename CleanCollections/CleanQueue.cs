@@ -10,27 +10,25 @@ namespace CleanCollections
         private readonly T[][] _subArrays;
         private int _count;
         private int _capacity;
+        private int _blockPowerOfTwo;
 
         public CleanQueue(int maxSize, int blockSize)
         {
+            if (!Util.IsPowerOfTwo(blockSize)) throw new ArgumentException("blockSize must be a power of two");
+
+            _blockPowerOfTwo = (int)Math.Log(blockSize, 2);
+
             _blockSize = blockSize;
 
-            _subArrays = new T[GetChunkIndex(maxSize, blockSize)][];
-        }
-
-        private static short GetChunkIndex(int index, int blockSize)
-        {
-            return (short)Math.Floor((double)index / blockSize);
+            _subArrays = new T[(short)(maxSize / blockSize)][];
         }
 
         public void Enqueue(T item)
         {
             EnsureCapacity();
 
-            int count = _count;
-            int blockSize = _blockSize;
-            short chunkIndex = GetChunkIndex(count, blockSize);
-            int localIndex = count - (chunkIndex * blockSize);
+            short chunkIndex = (short)(_count >> _blockPowerOfTwo);
+            int localIndex = _count - (chunkIndex * _blockSize);
 
             _subArrays[chunkIndex][localIndex] = item;
             _count++;
@@ -40,10 +38,9 @@ namespace CleanCollections
         {
             if (_count >= _capacity)
             {
-                int blockSize = _blockSize;
-                short chunkIndex = GetChunkIndex(_count, blockSize);
-                _subArrays[chunkIndex] = new T[blockSize];
-                _capacity += blockSize;
+                short chunkIndex = (short)(_count >> _blockPowerOfTwo);
+                _subArrays[chunkIndex] = new T[_blockSize];
+                _capacity += _blockSize;
             }
         }
 
@@ -58,9 +55,8 @@ namespace CleanCollections
 
         private T GetItem(int index)
         {
-            int blockSize = _blockSize;
-            short chunkIndex = GetChunkIndex(index, _blockSize);
-            int localIndex = index - (chunkIndex * blockSize);
+            short chunkIndex = (short)(index >> _blockPowerOfTwo);
+            int localIndex = index - (chunkIndex * _blockSize);
             var item = _subArrays[chunkIndex][localIndex];
             return item;
         }

@@ -9,18 +9,19 @@ namespace CleanCollections
         private readonly int _blockSize;
         private readonly T[][] _subArrays;
         private int _count;
-        private readonly Queue<ChunkedIndex> _deletedIndeces = new Queue<ChunkedIndex>();
+        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
         private int _capacity;
         private int _lastChunk = -1;
         private readonly int _blockPowerOfTwo;
 
         public CleanListIncremental(int maxSize, int blockSize)
         {
-            double log = Math.Log(blockSize, 2);
-            double logNoInt = (int) log;
-            if (Math.Abs((log - logNoInt)) > 0) throw new ArgumentException("blockSize must be a power of two");
+            if (!Util.IsPowerOfTwo(blockSize)) throw new ArgumentException("blockSize must be a power of two");
 
-            _blockPowerOfTwo = (int) log;
+            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, blockSize);
+
+            double log = Math.Log(blockSize, 2);
+            _blockPowerOfTwo = (int)log;
 
             _blockSize = blockSize;
             _subArrays = new T[(int) Math.Ceiling((double) maxSize/blockSize)][];

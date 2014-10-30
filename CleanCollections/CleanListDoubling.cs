@@ -21,7 +21,7 @@ namespace CleanCollections
     public class CleanListDoubling<T> : IIndexedList<T>
     {
         private readonly int _blockSize;
-        private readonly Queue<ChunkedIndex> _deletedIndeces = new Queue<ChunkedIndex>();
+        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
         private int _count;
         private readonly T[][] _subArrays;
         private int _capacity;
@@ -29,6 +29,7 @@ namespace CleanCollections
 
         public CleanListDoubling(int maxSize, int blockSize)
         {
+            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, 2048);
             _blockSize = blockSize;
 
             var blocks = (int)Math.Log((maxSize + blockSize + 1)/(double)blockSize, 2) + 1;
@@ -50,23 +51,6 @@ namespace CleanCollections
             return GetEnumerator();
         }
 
-        private static readonly int[] MultiplyDeBruijnBitPosition = new int[32]
-                                                                    {
-                                                                        0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
-                                                                        8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31
-                                                                    };
-
-        private static int LogDeBruijn(int v)
-        {
-            v |= v >> 1; // first round down to one less than a power of 2 
-            v |= v >> 2;
-            v |= v >> 4;
-            v |= v >> 8;
-            v |= v >> 16;
-
-            return MultiplyDeBruijnBitPosition[(uint) (v*0x07C4ACDDU) >> 27];
-        }
-
         int IIndexedList<T>.Add(T item)
         {
             var count = _count;
@@ -84,7 +68,7 @@ namespace CleanCollections
 
         private void GetChunkedIndex(int index, out short chunkIndex, out int localIndex)
         {
-            chunkIndex = (short) LogDeBruijn((int) ((index + _blockSize) / (double)_blockSize));
+            chunkIndex = (short) Util.LogDeBruijn((int) ((index + _blockSize) / (double)_blockSize));
             var startIndex = (_blockSize << chunkIndex) - _blockSize;
             localIndex = index - startIndex;
         }

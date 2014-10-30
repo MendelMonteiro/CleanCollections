@@ -7,7 +7,7 @@ namespace CleanCollections
     public class CleanListExponential<T> : IIndexedList<T>
     {
         private readonly int _initialBlockSize;
-        private readonly Queue<ChunkedIndex> _deletedIndeces = new Queue<ChunkedIndex>();
+        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
         private readonly int _maxSize;
         private readonly T[][] _subArrays;
         private int _capacity = 0;
@@ -17,6 +17,7 @@ namespace CleanCollections
 
         public CleanListExponential(int maxSize, int initialBlockSize)
         {
+            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, 2048);
             _maxSize = maxSize;
             _initialBlockSize = initialBlockSize;
 
