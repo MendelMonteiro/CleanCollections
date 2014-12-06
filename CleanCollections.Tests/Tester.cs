@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using NFluent;
 using NUnit.Framework;
 
 namespace CleanCollections.Tests

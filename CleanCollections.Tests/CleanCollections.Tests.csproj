@@ -48,6 +48,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NFluent">
+      <HintPath>..\CleanCollections\packages\NFluent.1.3.1.0\lib\net40\NFluent.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\FastCollections\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -60,10 +63,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CleanDictionaryTests.cs" />
     <Compile Include="CleanListDoublingTest.cs" />
     <Compile Include="CleanListIncrementalTest.cs" />
     <Compile Include="CleanListExponentialTest.cs" />
     <Compile Include="CleanQueueTest.cs" />
+    <Compile Include="GCTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tester.cs" />
   </ItemGroup>

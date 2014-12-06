@@ -23,7 +23,7 @@ namespace CleanCollections.Tests
         public void TestEnumeratorWithOneDelete(int deleteAt)
         {
             int length = 1024;
-            CleanListExponential<int> list = new CleanListExponential<int>(length, 4);
+            var list = new CleanListExponential<int>(length, 4);
 
             Tester.TestListEnumeratorWithOneDelete(list, deleteAt, length);
         }

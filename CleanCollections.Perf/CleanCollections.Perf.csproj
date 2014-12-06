@@ -68,6 +68,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CleanCollections.Tests\CleanCollections.Tests.csproj">
+      <Project>{31527c9b-d097-4b94-bd24-daeb30a3d369}</Project>
+      <Name>CleanCollections.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CleanCollections\CleanCollections.csproj">
       <Project>{7132625f-4d98-4765-8099-3692802ba507}</Project>
       <Name>CleanCollections</Name>

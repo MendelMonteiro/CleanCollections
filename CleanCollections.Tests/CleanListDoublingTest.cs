@@ -23,7 +23,7 @@ namespace CleanCollections.Tests
         public void TestEnumeratorWithOneDelete(int deleteAt)
         {
             int length = 1024;
-            CleanListDoubling<int> list = new CleanListDoubling<int>(length, 4);
+            var list = new CleanListDoubling<int>(length, 4);
 
             Tester.TestListEnumeratorWithOneDelete(list, deleteAt, length);
         }
