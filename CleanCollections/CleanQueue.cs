@@ -4,13 +4,17 @@ using System.Collections.Generic;
 
 namespace CleanCollections
 {
+    /// <summary>
+    /// A queue that grows (by blockSize) without creating any garbage.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class CleanQueue<T> : IEnumerable<T>
     {
         private readonly int _blockSize;
         private readonly T[][] _subArrays;
         private int _count;
         private int _capacity;
-        private int _blockPowerOfTwo;
+        private readonly int _blockPowerOfTwo;
 
         public CleanQueue(int maxSize, int blockSize)
         {

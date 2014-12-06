@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace CleanCollections
 {
+    /// <summary>
+    /// A list that does not produce any garbage when growing and grows exponentially (n ^ initialBlockSize)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class CleanListExponential<T> : IIndexedList<T>
     {
         private readonly int _initialBlockSize;

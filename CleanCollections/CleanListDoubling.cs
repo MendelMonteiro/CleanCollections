@@ -5,6 +5,8 @@ using System.Collections.Generic;
 namespace CleanCollections
 {
     /// <summary>
+    /// A list that does not produce any garbage when growing and grows by a doubling the next block size.
+    /// 
     /// c => capacity
     /// s => startIndex
     /// b => block size

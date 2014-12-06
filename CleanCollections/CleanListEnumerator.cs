@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace CleanCollections
 {
+    /// <summary>
+    /// A common enumerator for all the CleanList implementations (skips over any deleted indeces)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public struct CleanListEnumerator<T> : IEnumerator<T>
     {
         private readonly IList<T> _list;

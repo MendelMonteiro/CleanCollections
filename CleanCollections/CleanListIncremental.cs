@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace CleanCollections
 {
+    /// <summary>
+    /// A list that does not produce any garbage when growing and grows linearly
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class CleanListIncremental<T> : IIndexedList<T>
     {
         private readonly int _blockSize;
