@@ -13,7 +13,7 @@ namespace CleanCollections
         private readonly int _blockSize;
         private readonly T[][] _subArrays;
         private int _count;
-        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
+        private readonly CleanStack<ChunkedIndex> _deletedIndeces;
         private int _capacity;
         private int _lastChunk = -1;
         private readonly int _blockPowerOfTwo;
@@ -22,7 +22,7 @@ namespace CleanCollections
         {
             if (!Util.IsPowerOfTwo(blockSize)) throw new ArgumentException("blockSize must be a power of two");
 
-            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, blockSize);
+            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, blockSize);
 
             double log = Math.Log(blockSize, 2);
             _blockPowerOfTwo = (int)log;
@@ -49,16 +49,30 @@ namespace CleanCollections
         int IIndexedList<T>.Add(T item)
         {
             var count = _count;
+            int absoluteIndex;
 
-            EnsureCapacity();
+            // Use existing entry that was deleted
+            if (_deletedIndeces.Count > 0)
+            {
+                var nextFreeIndex = _deletedIndeces.Pop();
+                _subArrays[nextFreeIndex.ChunkIndex][nextFreeIndex.LocalIndex] = item;
+                absoluteIndex = nextFreeIndex.AbsoluteIndex;
+            }
+            // Add to the end
+            else
+            {
+                EnsureCapacity();
 
-            short chunkIndex;
-            int localIndex;
-            GetChunkedIndex(count, out chunkIndex, out localIndex);
+                short chunkIndex;
+                int localIndex;
+                GetChunkedIndex(count, out chunkIndex, out localIndex);
 
-            _subArrays[chunkIndex][localIndex] = item;
+                _subArrays[chunkIndex][localIndex] = item;
+                absoluteIndex = count;
+            }
+
             _count = count + 1;
-            return _count;
+            return absoluteIndex;
         }
 
         private void EnsureCapacity()
@@ -128,7 +142,7 @@ namespace CleanCollections
             short chunkIndex;
             int localIndex;
             GetChunkedIndex(index, out chunkIndex, out localIndex);
-            _deletedIndeces.Enqueue(new ChunkedIndex(chunkIndex, localIndex, index));
+            _deletedIndeces.Push(new ChunkedIndex(chunkIndex, localIndex, index));
             _count--;
         }
 

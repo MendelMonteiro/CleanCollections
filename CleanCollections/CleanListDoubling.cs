@@ -23,7 +23,7 @@ namespace CleanCollections
     public class CleanListDoubling<T> : IIndexedList<T>
     {
         private readonly int _blockSize;
-        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
+        private readonly CleanStack<ChunkedIndex> _deletedIndeces;
         private int _count;
         private readonly T[][] _subArrays;
         private int _capacity;
@@ -31,7 +31,7 @@ namespace CleanCollections
 
         public CleanListDoubling(int maxSize, int blockSize)
         {
-            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, 2048);
+            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, 2048);
             _blockSize = blockSize;
 
             var blocks = (int)Math.Log((maxSize + blockSize + 1)/(double)blockSize, 2) + 1;
@@ -56,16 +56,29 @@ namespace CleanCollections
         int IIndexedList<T>.Add(T item)
         {
             var count = _count;
+            int absoluteIndex;
 
-            EnsureCapacity();
+            // Use existing entry that was deleted
+            if (_deletedIndeces.Count > 0)
+            {
+                var nextFreeIndex = _deletedIndeces.Pop();
+                _subArrays[nextFreeIndex.ChunkIndex][nextFreeIndex.LocalIndex] = item;
+                absoluteIndex = nextFreeIndex.AbsoluteIndex;
+            }
+            else
+            {
+                EnsureCapacity();
 
-            short chunkIndex;
-            int localIndex;
-            GetChunkedIndex(count, out chunkIndex, out localIndex);
+                short chunkIndex;
+                int localIndex;
+                GetChunkedIndex(count, out chunkIndex, out localIndex);
 
-            _subArrays[chunkIndex][localIndex] = item;
+                _subArrays[chunkIndex][localIndex] = item;
+                absoluteIndex = count;
+            }
+
             _count = count + 1;
-            return _count;
+            return absoluteIndex;
         }
 
         private void GetChunkedIndex(int index, out short chunkIndex, out int localIndex)
@@ -134,7 +147,7 @@ namespace CleanCollections
             short chunkIndex;
             int localIndex;
             GetChunkedIndex(index, out chunkIndex, out localIndex);
-            _deletedIndeces.Enqueue(new ChunkedIndex(chunkIndex, localIndex, index));
+            _deletedIndeces.Push(new ChunkedIndex(chunkIndex, localIndex, index));
             _count--;
             // TODO: set value to default(T) ?
         }

@@ -5,10 +5,11 @@ using System.Collections.Generic;
 namespace CleanCollections
 {
     /// <summary>
-    /// A queue that grows (by blockSize) without creating any garbage.
+    /// A stack that grows linearly without creating any garbage.
+    /// Similar ot CleanListIncremental but exposes a Stack interface
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class CleanQueue<T> : IEnumerable<T>
+    public class CleanStack<T> : IEnumerable<T>
     {
         private readonly int _blockSize;
         private readonly T[][] _subArrays;
@@ -16,7 +17,7 @@ namespace CleanCollections
         private int _capacity;
         private readonly int _blockPowerOfTwo;
 
-        public CleanQueue(int maxSize, int blockSize)
+        public CleanStack(int maxSize, int blockSize)
         {
             if (!Util.IsPowerOfTwo(blockSize)) throw new ArgumentException("blockSize must be a power of two");
 
@@ -27,7 +28,7 @@ namespace CleanCollections
             _subArrays = new T[(short)(maxSize / blockSize)][];
         }
 
-        public void Enqueue(T item)
+        public void Push(T item)
         {
             EnsureCapacity();
 
@@ -48,7 +49,7 @@ namespace CleanCollections
             }
         }
 
-        public T Dequeue()
+        public T Pop()
         {
             var item = GetItem(_count - 1);
 
@@ -89,14 +90,14 @@ namespace CleanCollections
 
         public struct Enumerator : IEnumerator<T>
         {
-            private readonly CleanQueue<T> _queue;
+            private readonly CleanStack<T> _stack;
             private T _current;
             private int _index;
 
-            public Enumerator(CleanQueue<T> queue)
+            public Enumerator(CleanStack<T> stack)
             {
                 _index = -1;
-                _queue = queue;
+                _stack = stack;
                 _current = default(T);
             }
 
@@ -106,12 +107,12 @@ namespace CleanCollections
 
             public bool MoveNext()
             {
-                bool beforeEnd = _index + 1 < _queue.Count;
+                bool beforeEnd = _index + 1 < _stack.Count;
 
                 if (beforeEnd)
                 {
                     _index++;
-                    _current = _queue.GetItem(_index);
+                    _current = _stack.GetItem(_index);
                 }
 
                 return beforeEnd;

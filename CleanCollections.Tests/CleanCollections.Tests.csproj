@@ -67,8 +67,9 @@
     <Compile Include="CleanListDoublingTest.cs" />
     <Compile Include="CleanListIncrementalTest.cs" />
     <Compile Include="CleanListExponentialTest.cs" />
-    <Compile Include="CleanQueueTest.cs" />
+    <Compile Include="CleanStackTest.cs" />
     <Compile Include="GCTester.cs" />
+    <Compile Include="ListExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tester.cs" />
   </ItemGroup>

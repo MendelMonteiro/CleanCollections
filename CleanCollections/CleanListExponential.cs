@@ -11,7 +11,7 @@ namespace CleanCollections
     public class CleanListExponential<T> : IIndexedList<T>
     {
         private readonly int _initialBlockSize;
-        private readonly CleanQueue<ChunkedIndex> _deletedIndeces;
+        private readonly CleanStack<ChunkedIndex> _deletedIndeces;
         private readonly int _maxSize;
         private readonly T[][] _subArrays;
         private int _capacity = 0;
@@ -21,7 +21,7 @@ namespace CleanCollections
 
         public CleanListExponential(int maxSize, int initialBlockSize)
         {
-            _deletedIndeces = new CleanQueue<ChunkedIndex>(maxSize, 2048);
+            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, 2048);
             _maxSize = maxSize;
             _initialBlockSize = initialBlockSize;
 
@@ -90,7 +90,7 @@ namespace CleanCollections
             // Use existing entry that was deleted
             if (_deletedIndeces.Count > 0)
             {
-                var nextFreeIndex = _deletedIndeces.Dequeue();
+                var nextFreeIndex = _deletedIndeces.Pop();
                 _subArrays[nextFreeIndex.ChunkIndex][nextFreeIndex.LocalIndex] = item;
                 absoluteIndex = nextFreeIndex.AbsoluteIndex;
             }
@@ -174,7 +174,7 @@ namespace CleanCollections
         public void RemoveAt(int index)
         {
             var absoluteIndex = GetIndex(index);
-            _deletedIndeces.Enqueue(absoluteIndex);
+            _deletedIndeces.Push(absoluteIndex);
             _count--;
             // TODO: set value to default(T) ?
         }

@@ -7,6 +7,8 @@ namespace CleanCollections.Tests
     {
         public static void Test(Action test)
         {
+            test();
+
             GC.Collect(GC.MaxGeneration);
             GC.WaitForFullGCComplete();
             var countBefore = GC.CollectionCount(0);

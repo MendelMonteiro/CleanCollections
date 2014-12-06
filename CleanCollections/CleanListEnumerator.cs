@@ -12,10 +12,10 @@ namespace CleanCollections
         private readonly IList<T> _list;
         private T _current;
         private int _index;
-        private CleanQueue<ChunkedIndex>.Enumerator _deletedEnumerator;
+        private CleanStack<ChunkedIndex>.Enumerator _deletedEnumerator;
         private bool _hasMoreDeletedItems;
 
-        internal CleanListEnumerator(IList<T> list, CleanQueue<ChunkedIndex> deletedIndeces) : this()
+        internal CleanListEnumerator(IList<T> list, CleanStack<ChunkedIndex> deletedIndeces) : this()
         {
             _list = list;
             _deletedEnumerator = deletedIndeces.GetEnumerator();

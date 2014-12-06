@@ -51,7 +51,7 @@ namespace CleanCollections
 
             Assert.AreEqual(0, list.Count, "List is not empty");
 
-            // Add again to test delete queue
+            // Add again to test delete stack
             for (int i = 0; i < length; i++)
             {
                 list.Add(i);

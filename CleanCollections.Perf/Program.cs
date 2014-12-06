@@ -14,7 +14,10 @@ namespace CleanCollections.Perf
 //            TestSuite.TestList("Doubling", length, new CleanListDoubling<int>(length, 4));
 //            TestSuite.TestList("Exponential", length, new CleanListExponential<int>(length, 4));
 
-            CleanQueueTest test = new CleanQueueTest();
+//            CleanStackTest test = new CleanStackTest();
+//            test.TestAllocations();
+
+            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
             test.TestAllocations();
 
             Console.WriteLine("Finished");

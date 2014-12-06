@@ -3,23 +3,23 @@
 namespace CleanCollections.Tests
 {
     [TestFixture]
-    public class CleanQueueTest
+    public class CleanStackTest
     {
         [Test]
         public void Test()
         {
             int maxSize = 1024;
-            var queue = new CleanQueue<int>(maxSize, 128);
+            var stack = new CleanStack<int>(maxSize, 128);
 
             for (int i = 0; i < maxSize; i++)
             {
-                queue.Enqueue(i);
-                Assert.AreEqual(i + 1, queue.Count);
+                stack.Push(i);
+                Assert.AreEqual(i + 1, stack.Count);
             }
 
             for (int i = maxSize - 1; i >= 0; i--)
             {
-                var item = queue.Dequeue();
+                var item = stack.Pop();
                 Assert.AreEqual(i, item);
             }
         }
@@ -28,16 +28,16 @@ namespace CleanCollections.Tests
         public void TestEnumerate()
         {
             int maxSize = 1024;
-            var queue = new CleanQueue<int>(maxSize, 128);
+            var stack = new CleanStack<int>(maxSize, 128);
 
             for (int i = 0; i < maxSize; i++)
             {
-                queue.Enqueue(i);
-                Assert.AreEqual(i + 1, queue.Count);
+                stack.Push(i);
+                Assert.AreEqual(i + 1, stack.Count);
             }
 
             int j = 0;
-            foreach (var item in queue)
+            foreach (var item in stack)
             {
                 Assert.AreEqual(j, item);
                 j++;
@@ -48,20 +48,20 @@ namespace CleanCollections.Tests
         public void TestAllocations()
         {
             int maxSize = 1024 * 1024;
-            var queue = new CleanQueue<int>(maxSize, 128);
+            var stack = new CleanStack<int>(maxSize, 128);
             GCTester.Test(() =>
                           {
-                              int iterations = 1000;
+                              int iterations = 10;
                               for (int j = 0; j < iterations; j++)
                               {
                                   for (int i = 0; i < maxSize; i++)
                                   {
-                                      queue.Enqueue(i);
+                                      stack.Push(i);
                                   }
 
                                   for (int i = 0; i < maxSize; i++)
                                   {
-                                      queue.Dequeue();
+                                      stack.Pop();
                                   }
                               }
                           });

@@ -5,7 +5,7 @@ namespace CleanCollections.Tests
 {
     static internal class Tester
     {
-        public static void TestListEnumerator(IIndexedList<int> list, int length)
+        public static void TestListEnumerator(this IIndexedList<int> list, int length)
         {
             for (int i = 0; i < length; i++)
             {
@@ -20,7 +20,7 @@ namespace CleanCollections.Tests
             }
         }
 
-        public static void TestListEnumeratorWithOneDelete(IIndexedList<int> list, int deleteAt, int length)
+        public static void TestListEnumeratorWithOneDelete(this IIndexedList<int> list, int deleteAt, int length)
         {
             for (int i = 0; i < length; i++)
             {
@@ -42,7 +42,7 @@ namespace CleanCollections.Tests
             }
         }
 
-        public static void TestListEnumeratorWithTwoSpacedDeletes(IIndexedList<int> list, int deleteAt, int length)
+        public static void TestListEnumeratorWithTwoSpacedDeletes(this IIndexedList<int> list, int deleteAt, int length)
         {
             for (int i = 0; i < length; i++)
             {

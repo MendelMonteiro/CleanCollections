@@ -5,15 +5,6 @@ namespace CleanCollections.Tests
     [TestFixture]
     public class CleanListExponentialTest
     {
-        [Test]
-        public void TestEnumerator()
-        {
-            int length = 1024;
-            var list = new CleanListExponential<int>(length, 4);
-
-            Tester.TestListEnumerator(list, length);
-        }
-
         [TestCase(0)]
         [TestCase(1)]
         [TestCase(2)]
@@ -25,7 +16,7 @@ namespace CleanCollections.Tests
             int length = 1024;
             var list = new CleanListExponential<int>(length, 4);
 
-            Tester.TestListEnumeratorWithOneDelete(list, deleteAt, length);
+            list.TestListEnumeratorWithOneDelete(deleteAt, length);
         }
 
         [TestCase(0)]
@@ -38,7 +29,24 @@ namespace CleanCollections.Tests
         {
             int length = 1024;
             var list = new CleanListExponential<int>(length, 4);
-            Tester.TestListEnumeratorWithTwoSpacedDeletes(list, deleteAt, length);
+            list.TestListEnumeratorWithTwoSpacedDeletes(deleteAt, length);
+        }
+
+        [Test]
+        public void TestAllocations()
+        {
+            const int maxSize = 1024*1024;
+            var list = new CleanListExponential<int>(maxSize, 128);
+            GCTester.Test(() => list.AddThenRemove(maxSize));
+        }
+
+        [Test]
+        public void TestEnumerator()
+        {
+            int length = 1024;
+            var list = new CleanListExponential<int>(length, 4);
+
+            list.TestListEnumerator(length);
         }
     }
 }
