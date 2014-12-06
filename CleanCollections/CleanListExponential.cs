@@ -19,9 +19,9 @@ namespace CleanCollections
         private int _lastChunk = -1;
         private int _count;
 
-        public CleanListExponential(int maxSize, int initialBlockSize)
+        public CleanListExponential(int maxSize, int initialBlockSize, int deletedIndecesBlockSize = 256)
         {
-            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, 2048);
+            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, deletedIndecesBlockSize);
             _maxSize = maxSize;
             _initialBlockSize = initialBlockSize;
 

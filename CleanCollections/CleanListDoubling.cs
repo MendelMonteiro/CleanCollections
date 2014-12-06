@@ -29,9 +29,9 @@ namespace CleanCollections
         private int _capacity;
         private int _lastChunk = -1;
 
-        public CleanListDoubling(int maxSize, int blockSize)
+        public CleanListDoubling(int maxSize, int blockSize, int deletedIndecesBlockSize = 256)
         {
-            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, 2048);
+            _deletedIndeces = new CleanStack<ChunkedIndex>(maxSize, deletedIndecesBlockSize);
             _blockSize = blockSize;
 
             var blocks = (int)Math.Log((maxSize + blockSize + 1)/(double)blockSize, 2) + 1;
