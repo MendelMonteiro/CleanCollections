@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using NFluent;
 using NUnit.Framework;
 
@@ -22,6 +21,13 @@ namespace CleanCollections.Tests
             Check.That(dict[1]).IsEqualTo("Hello");
             //Check.That(dict.Values.First()).IsEqualTo("Hello");
             //Check.That(dict.Keys.First()).IsEqualTo(1);
+
+            for (int i = 0; i < 1023; i++)
+            {
+                var key = 2 + i;
+                dict.Add(key, "Hello " + key);
+                Check.That(dict[key]).IsEqualTo("Hello " + key);
+            }
         }
 
         [Test]
@@ -108,14 +114,13 @@ namespace CleanCollections.Tests
         /// <param name="value"></param>
         private void InsertItem(TKey key, TValue value)
         {
-            // Fuck it if we're going to raise an exception it may as well be a null-ref (avoid boxing)
-            var hashcode = key.GetHashCode(); // Could use comparer but we want the exception
+            var hashcode = GetKeyHashcode(key);
             var bucket = GetBucket(hashcode);
 
             // New slot in new bucket
             if (_buckets[bucket] < 0)
             {
-                _buckets[bucket] = AddNewSlot(key, value, hashcode);
+                _buckets[bucket] = AddNewSlot(key, value, hashcode, ref bucket);
                 return;
             }
 
@@ -125,7 +130,7 @@ namespace CleanCollections.Tests
                 // New slot in existing bucket
                 if (slot.Next == -1)
                 {
-                    slot.Next = AddNewSlot(key, value, hashcode);
+                    NewSlotInExistingBucket(key, value, bucket, hashcode, slot);
                     return;
                 }
             }
@@ -133,9 +138,20 @@ namespace CleanCollections.Tests
             // Replacing slot with new value for same key
             slot.Value = value;
             slot.Key = key; // Need to overwrite the key?
+            _entries[bucket] = slot;
         }
 
-        private int AddNewSlot(TKey key, TValue value, int hashcode)
+        private void NewSlotInExistingBucket(TKey key, TValue value, int bucket, int hashcode, Entry slot)
+        {
+            var previousBucket = bucket;
+            slot.Next = AddNewSlot(key, value, hashcode, ref bucket);
+            if (bucket == previousBucket)
+                _entries[previousBucket] = slot;
+            else
+                _buckets[bucket] = slot.Next;
+        }
+
+        private int AddNewSlot(TKey key, TValue value, int hashcode, ref int bucket)
         {
             var newSlot = new Entry();
             newSlot.Next = -1;
@@ -143,7 +159,7 @@ namespace CleanCollections.Tests
             newSlot.Value = value;
             newSlot.HashCode = hashcode;
 
-            EnsureCapacity();
+            EnsureCapacity(hashcode, ref bucket);
             return AddEntry(newSlot);
         }
 
@@ -167,22 +183,28 @@ namespace CleanCollections.Tests
         /// <summary>
         /// To be called before adding items to _entries
         /// </summary>
-        private void EnsureCapacity()
+        /// <param name="hashcode"></param>
+        /// <param name="bucket"></param>
+        private void EnsureCapacity(int hashcode, ref int bucket)
         {
-            if (_size >= _entries.Count)
+            if (_capacity <= _entries.Count)
             {
                 Grow();
+
+                // Re-hash the current if we grow
+                bucket = GetBucket(hashcode);
             }
         }
 
         private int GetBucket(int hashcode)
         {
-            return _capacity % hashcode;
+            return hashcode % _capacity;
         }
 
         /// <summary>
         /// Double the capacity and then re-hash using the new capacity
         /// Start from the last bucket and work our way down to do this in-place
+        /// When an entry moves into a vacant bucket make sure to change any entries that point to it
         /// </summary>
         private void Grow()
         {
@@ -196,13 +218,42 @@ namespace CleanCollections.Tests
             for (int i = oldCapacity - 1; i >= 0; i--)
             {
                 var slotIndex = _buckets[i];
-                if (slotIndex > 0)
+                if (slotIndex <= 0) continue;
+                
+                int previous = -1;
+                for (int current = slotIndex; current > 0; )
                 {
-                    var slot = _entries[slotIndex];
-                    var newBucket = GetBucket(slot.HashCode);
-                    _buckets[newBucket] = slotIndex;
-                    _buckets[i] = -1;
+                    var currentSlot = _entries[current];
+                    var next = currentSlot.Next;
+
+                    var newBucket = GetBucket(currentSlot.HashCode);
+                    if (newBucket != i)
+                    {
+                        MoveSlotFromBucket(newBucket, current, previous, currentSlot, i);
+                    }
+
+                    previous = current;
+                    current = next;
                 }
+            }
+        }
+
+        private void MoveSlotFromBucket(int newBucket, int current, int previous, Entry currentSlot, int i)
+        {
+            _buckets[newBucket] = current;
+            // Moving a slot referenced by a previous one
+            if (previous > 0)
+            {
+                var previousSlot = _entries[previous];
+                previousSlot.Next = currentSlot.Next;
+                _entries[previous] = previousSlot;
+            }
+                // Moving a slot not referenced
+            else
+            {
+                _buckets[i] = currentSlot.Next;
+                currentSlot.Next = -1;
+                _entries[current] = currentSlot;
             }
         }
 
@@ -277,7 +328,30 @@ namespace CleanCollections.Tests
         /// <returns></returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            throw new NotImplementedException();
+            value = default(TValue);
+            var hashcode = GetKeyHashcode(key);
+            var bucket = GetBucket(hashcode);
+
+            var slotIndex = _buckets[bucket];
+            if (slotIndex < 0)
+                return false;
+
+            Entry slot;
+            for (slot = _entries[slotIndex]; !_comparer.Equals(key, slot.Key); slot = _entries[slot.Next])
+            {
+                if (slot.Next < 0)
+                    return false;
+            }
+
+            value = slot.Value;
+            return true;
+        }
+
+        private static int GetKeyHashcode(TKey key)
+        {
+            // Fuck it if we're going to raise an exception it may as well be a null-ref (avoid boxing)
+            var hashcode = key.GetHashCode(); // Could use comparer but we want the exception
+            return hashcode;
         }
 
         public TValue this[TKey key]
@@ -312,6 +386,11 @@ namespace CleanCollections.Tests
             public int Next;
             public TKey Key;
             public TValue Value;
+
+            public override string ToString()
+            {
+                return string.Format("Key: {0}, Value: {1}, Next: {2}, HashCode: {3}", Key, Value, Next, HashCode);
+            }
         }
     }
 }
