@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChunkedIndex.cs" />
+    <Compile Include="CleanDictionary.cs" />
     <Compile Include="CleanListDoubling.cs" />
     <Compile Include="CleanListEnumerator.cs" />
     <Compile Include="CleanListExponential.cs" />
