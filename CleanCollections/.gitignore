@@ -3,3 +3,6 @@ obj
 packages
 *.vspx
 *.vsp
+*.suo
+*.user
+*.psess
