@@ -5,6 +5,8 @@ List, Dictionary and Stack which do not add GC pressure when performing any oper
 
 Operations should have the same order of complexity as in their BCL counterparts.
 
+Licensed under the Apache License 2.0.
+
 + List
   - 3 growth strategies implemented Incremental, Doubling and Exponential
   - Indeces are permanent and do not represent the nth element in the list
