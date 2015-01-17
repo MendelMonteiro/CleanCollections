@@ -14,9 +14,9 @@ namespace CleanCollections.Tests
         [SetUp]
         public void Setup()
         {
-            _dict = new CleanDictionary<int, string>(4, maxSize: 1024);            
+            _dict = new CleanDictionary<int, string>(4, maxSize: 1024);
         }
-        
+
         [Test]
         public void TestAdding()
         {
@@ -52,7 +52,24 @@ namespace CleanCollections.Tests
                 var key = 2 + i;
                 _dict.Add(key, "Hello " + key);
                 Check.That(_dict[key]).IsEqualTo("Hello " + key);
-            }            
+            }
+        }
+
+        [Test]
+        public void TestLookupMissingKey()
+        {
+            _dict.Add(1, "Foo");
+
+            Check.ThatCode(() => _dict[2]).Throws<KeyNotFoundException>();
+        }
+
+        [Test]
+        public void TestEmptyDictionary()
+        {
+            Check.That(_dict.Count).IsEqualTo(0);
+            Check.ThatCode(() => _dict[3]).Throws<KeyNotFoundException>();
+            Check.ThatCode(() => _dict.Remove(3)).Throws<KeyNotFoundException>();
+            Check.That(_dict.ContainsKey(3)).IsFalse();
         }
 
         [Test]
@@ -69,10 +86,21 @@ namespace CleanCollections.Tests
         [Test]
         public void TestRemove()
         {
-            _dict.Add(1, "Hello");
-            Check.That(_dict.Count).IsEqualTo(1);
-            _dict.Remove(1);
-            Check.That(_dict.Count).IsEqualTo(0);
+            TestAdding();
+
+            for (int i = 1; i < 1023; i++)
+            {
+                _dict.Remove(i);
+            }
+
+            TestEmptyDictionary();
+        }
+
+        [Test]
+        public void TestRemoveThenAdd()
+        {
+            TestRemove();
+            TestAdding();
         }
 
         [Test]
@@ -80,9 +108,7 @@ namespace CleanCollections.Tests
         {
             TestAdding();
             _dict.Clear();
-
-            Check.That(_dict.Count).IsZero();
-            Check.ThatCode(() => _dict[1]).Throws<KeyNotFoundException>();
+            TestEmptyDictionary();
         }
     }
 
@@ -214,7 +240,7 @@ namespace CleanCollections.Tests
                 return addedSlot;
             }
 
-            return ((IIndexedList<Entry>) _entries).Add(newEntry);
+            return ((IIndexedList<Entry>)_entries).Add(newEntry);
         }
 
         /// <summary>
@@ -246,7 +272,7 @@ namespace CleanCollections.Tests
         private void Grow()
         {
             var oldCapacity = _capacity;
-            _capacity = oldCapacity*2;
+            _capacity = oldCapacity * 2;
             for (int i = oldCapacity; i < _capacity; i++)
             {
                 _buckets.Add(-1);
@@ -256,7 +282,7 @@ namespace CleanCollections.Tests
             {
                 var slotIndex = _buckets[bucketIndex];
                 if (slotIndex <= 0) continue;
-                
+
                 int previous = -1;
                 for (int current = slotIndex; current > 0; )
                 {
@@ -265,7 +291,7 @@ namespace CleanCollections.Tests
 
                     var newBucketIndex = GetBucket(currentSlot.HashCode);
                     if (newBucketIndex != bucketIndex)
-                        MoveSlotFromBucket(newBucketIndex, current, previous, currentSlot, bucketIndex);
+                        MoveSlotFromBucketToNewBucket(newBucketIndex, current, previous, currentSlot, bucketIndex);
 
                     previous = current;
                     current = next;
@@ -273,7 +299,7 @@ namespace CleanCollections.Tests
             }
         }
 
-        private void MoveSlotFromBucket(int newBucket, int current, int previous, Entry currentSlot, int i)
+        private void MoveSlotFromBucketToNewBucket(int newBucket, int current, int previous, Entry currentSlot, int i)
         {
             _buckets[newBucket] = current;
             // Moving a slot referenced by a previous one
@@ -283,7 +309,7 @@ namespace CleanCollections.Tests
                 previousSlot.Next = currentSlot.Next;
                 _entries[previous] = previousSlot;
             }
-                // Moving a slot not referenced
+            // Moving a slot not referenced
             else
             {
                 _buckets[i] = currentSlot.Next;
@@ -303,7 +329,58 @@ namespace CleanCollections.Tests
             if (_size <= 0) ThrowKeyNotFound(key);
 
             value = default(TValue);
-            return false;
+            var hashcode = GetKeyHashcode(key);
+            var bucket = GetBucket(hashcode);
+
+            var slotIndex = _buckets[bucket];
+            if (slotIndex < 0)
+                return false;
+
+            Entry slot;
+            int previousSlotIndex = -1, currentSlotIndex = slotIndex;
+            for (slot = _entries[slotIndex]; !_comparer.Equals(key, slot.Key); slot = _entries[slot.Next], currentSlotIndex = slot.Next)
+            {
+                if (slot.Next < 0)
+                    return false; // Got to end of linked list without finding matching entry
+                
+                previousSlotIndex = slotIndex;
+            }
+
+            // Found the entry
+            value = slot.Value;
+
+            RemoveSlot(previousSlotIndex, slot, bucket, currentSlotIndex);
+
+            return true;
+        }
+
+        private void RemoveSlot(int previousSlotIndex, Entry slot, int bucket, int currentSlotIndex)
+        {
+            // The slot will either be on its own, at the start, at the end or in the middle
+            if (previousSlotIndex < 0 && slot.Next < 0)
+            {
+                _buckets[bucket] = -1;
+            }
+            else if (previousSlotIndex < 0 && slot.Next >= 0)
+            {
+                _buckets[bucket] = slot.Next;
+            }
+            else if (slot.Next < 0 && previousSlotIndex >= 0)
+            {
+                var previous = _entries[previousSlotIndex];
+                previous.Next = -1;
+                _entries[previousSlotIndex] = previous;
+            }
+            else
+            {
+                var previous = _entries[previousSlotIndex];
+                previous.Next = slot.Next;
+                _entries[previousSlotIndex] = previous;
+            }
+
+            _entries[currentSlotIndex] = new Entry{Next = _nextFreeSlot};
+            _nextFreeSlot = currentSlotIndex;
+            _size--;
         }
 
         /// <summary>
@@ -343,7 +420,8 @@ namespace CleanCollections.Tests
         /// <returns></returns>
         public bool ContainsKey(TKey key)
         {
-            throw new NotImplementedException();
+            TValue value;
+            return TryGetValue(key, out value);
         }
 
         public void Add(TKey key, TValue value)
@@ -367,9 +445,10 @@ namespace CleanCollections.Tests
         /// <returns></returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            if (_size <= 0) ThrowKeyNotFound(key);
-
             value = default(TValue);
+
+            if (_size <= 0) return false;
+
             var hashcode = GetKeyHashcode(key);
             var bucket = GetBucket(hashcode);
 
@@ -380,8 +459,7 @@ namespace CleanCollections.Tests
             Entry slot;
             for (slot = _entries[slotIndex]; !_comparer.Equals(key, slot.Key); slot = _entries[slot.Next])
             {
-                if (slot.Next < 0)
-                    return false;
+                if (slot.Next < 0) return false;
             }
 
             value = slot.Value;
