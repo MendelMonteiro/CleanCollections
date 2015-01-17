@@ -20,8 +20,9 @@ namespace CleanCollections.Perf
 //            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
 //            test.TestAllocations();
 
-            var dict = new CleanDictionary<int, int>(16, maxSize: 1024*1024);
-            for (int i = 0; i < 1024 * 1024-1; i++)
+            var iterations = 1024 * 1024;
+            var dict = new CleanDictionary<int, int>(16, maxSize: iterations);
+            for (int i = 0; i < iterations; i++)
             {
                 dict.Add(i, i);
             }

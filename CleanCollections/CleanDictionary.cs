@@ -161,7 +161,7 @@ namespace CleanCollections
         /// <param name="bucket"></param>
         private void EnsureCapacity(int hashcode, ref int bucket)
         {
-            if (_capacity <= _entries.Count)
+            if (_capacity <= _size)
             {
                 Grow();
 

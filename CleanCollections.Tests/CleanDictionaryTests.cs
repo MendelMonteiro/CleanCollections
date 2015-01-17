@@ -22,7 +22,7 @@ namespace CleanCollections.Tests
         [Test]
         public void TestAdding()
         {
-            for (int i = 1; i < 1023; i++)
+            for (int i = 1; i < 1024; i++)
             {
                 _dict.Add(i, "Hello " + i);
                 Check.That(_dict.Count).IsEqualTo(i);
@@ -33,7 +33,7 @@ namespace CleanCollections.Tests
         [Test]
         public void TestAddingStrings()
         {
-            for (int i = 1; i < 1023; i++)
+            for (int i = 1; i < 1024; i++)
             {
                 var str = "Hello " + i;
                 _reverseDict.Add(str, i);
@@ -45,7 +45,7 @@ namespace CleanCollections.Tests
         [Test]
         public void TestAddingNegativeNumbers()
         {
-            for (int i = 1; i < 1023; i++)
+            for (int i = 1; i < 1024; i++)
             {
                 _dict.Add(-i, "Hello " + i);
                 Check.That(_dict.Count).IsEqualTo(i);
@@ -57,7 +57,7 @@ namespace CleanCollections.Tests
         public void TestAddingDescendingNumbers()
         {
             int count = 0;
-            for (int i = 1023; i > 0; i--)
+            for (int i = 1024; i > 0; i--)
             {
                 _dict.Add(i, "Hello " + i);
                 count++;
@@ -85,7 +85,7 @@ namespace CleanCollections.Tests
         [Test]
         public void TestLookup()
         {
-            for (int i = 0; i < 1023; i++)
+            for (int i = 0; i < 1024; i++)
             {
                 var key = 2 + i;
                 _dict.Add(key, "Hello " + key);
@@ -126,7 +126,7 @@ namespace CleanCollections.Tests
         {
             TestAdding();
 
-            for (int i = 1; i < 1023; i++)
+            for (int i = 1; i < 1024; i++)
             {
                 _dict.Remove(i);
             }
@@ -152,14 +152,13 @@ namespace CleanCollections.Tests
         [Test, Explicit]
         public void TestPerformanceVsDictionary()
         {
-            const int maxSize = 1024 * 1024 - 1;
-            RunPerfTest(maxSize);
-            RunPerfTest(maxSize);
-        }
+            const int maxSize = 1024 * 1024;
+//            RunPerfTest(maxSize);
+//        }
 
-        private static void RunPerfTest(int maxSize)
-        {
-            var clean = new CleanDictionary<int, int>(16, maxSize: maxSize + 1);
+//        private static void RunPerfTest(int maxSize)
+//        {
+            var clean = new CleanDictionary<int, int>(16, maxSize: maxSize);
             var dirty = new Dictionary<int, int>(16);
 
             Stopwatch watch = Stopwatch.StartNew();
@@ -188,12 +187,12 @@ namespace CleanCollections.Tests
             var dict = new CleanDictionary<int, int>(16, maxSize: maxSize);
             GCTester.Test(() =>
                           {
-                              for (int i = 0; i < maxSize - 1; i++)
+                              for (int i = 0; i < maxSize; i++)
                               {
                                   dict.Add(i, i);
                               }
 
-                              for (int i = 0; i < maxSize - 1; i++)
+                              for (int i = 0; i < maxSize; i++)
                               {
                                   var x = dict[i];
                                   dict.Remove(i);
