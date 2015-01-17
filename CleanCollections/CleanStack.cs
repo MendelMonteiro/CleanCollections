@@ -51,17 +51,23 @@ namespace CleanCollections
 
         public T Pop()
         {
-            var item = GetItem(_count - 1);
+            if (_count <= 0) throw new InvalidOperationException("Stack is empty");
 
-            // Set current item to default(T) ?
+            short chunkIndex;
+            int localIndex;
+            var item = GetItem(_count - 1, out chunkIndex, out localIndex);
+
+            // Set current item to default(T)
+            _subArrays[chunkIndex][localIndex] = default(T);
+
             _count--;
             return item;
         }
 
-        private T GetItem(int index)
+        private T GetItem(int index, out short chunkIndex, out int localIndex)
         {
-            short chunkIndex = (short)(index >> _blockPowerOfTwo);
-            int localIndex = index - (chunkIndex * _blockSize);
+            chunkIndex = (short)(index >> _blockPowerOfTwo);
+            localIndex = index - (chunkIndex * _blockSize);
             var item = _subArrays[chunkIndex][localIndex];
             return item;
         }
@@ -69,6 +75,11 @@ namespace CleanCollections
         public void Clear()
         {
             _count = 0;
+
+            foreach (var subArray in _subArrays)
+            {
+                if (subArray != null) Array.Clear(subArray, 0, subArray.Length);
+            }
         }
 
         public int Count { get { return _count; } private set { _count = value; } }
@@ -112,7 +123,9 @@ namespace CleanCollections
                 if (beforeEnd)
                 {
                     _index++;
-                    _current = _stack.GetItem(_index);
+                    short chunkIndex;
+                    int localIndex;
+                    _current = _stack.GetItem(_index, out chunkIndex, out localIndex);
                 }
 
                 return beforeEnd;

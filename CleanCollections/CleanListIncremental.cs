@@ -106,6 +106,11 @@ namespace CleanCollections
         public void Clear()
         {
             _count = 0;
+
+            foreach (var subArray in _subArrays)
+            {
+                if (subArray != null) Array.Clear(subArray, 0, subArray.Length);
+            }
         }
 
         public bool Contains(T item)
@@ -144,11 +149,14 @@ namespace CleanCollections
             GetChunkedIndex(index, out chunkIndex, out localIndex);
             _deletedIndeces.Push(new ChunkedIndex(chunkIndex, localIndex, index));
             _count--;
+
+            // Set value to default(T)
+            _subArrays[chunkIndex][localIndex] = default(T);
         }
 
         private void CheckIndex(int index)
         {
-            if (index < (uint)0 || (uint)index > (uint)Count - 1) throw new IndexOutOfRangeException();
+            if (_count == 0 || index < (uint)0 || (uint)index > (uint)_count - 1) throw new IndexOutOfRangeException();
         }
 
         public T this[int index]

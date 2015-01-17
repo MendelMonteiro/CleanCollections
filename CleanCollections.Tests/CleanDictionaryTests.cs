@@ -9,43 +9,80 @@ namespace CleanCollections.Tests
     [TestFixture]
     class CleanDictionaryTests
     {
+        private CleanDictionary<int, string> _dict;
+
+        [SetUp]
+        public void Setup()
+        {
+            _dict = new CleanDictionary<int, string>(4, maxSize: 1024);            
+        }
+        
         [Test]
         public void TestAdding()
         {
-            var dict = new CleanDictionary<int,string>(4, maxSize:1024);
-
-            Dictionary<int, string> d;
-
-            dict.Add(1, "Hello");
-            Check.That(dict.Count).IsEqualTo(1);
-            Check.That(dict[1]).IsEqualTo("Hello");
-            //Check.That(dict.Values.First()).IsEqualTo("Hello");
-            //Check.That(dict.Keys.First()).IsEqualTo(1);
-
-            for (int i = 0; i < 1023; i++)
+            for (int i = 1; i < 1023; i++)
             {
-                var key = 2 + i;
-                dict.Add(key, "Hello " + key);
-                Check.That(dict[key]).IsEqualTo("Hello " + key);
+                _dict.Add(i, "Hello " + i);
+                Check.That(_dict.Count).IsEqualTo(i);
+                Check.That(_dict[i]).IsEqualTo("Hello " + i);
+            }
+        }
+
+        [Test]
+        public void TestShouldGrow()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                _dict.Add(i, i.ToString());
+            }
+
+            Check.That(_dict.Count).IsEqualTo(5);
+
+            for (int i = 0; i < _dict.Count; i++)
+            {
+                Check.That(_dict[i]).IsEqualTo(i.ToString());
             }
         }
 
         [Test]
         public void TestLookup()
         {
-            
+            for (int i = 0; i < 1023; i++)
+            {
+                var key = 2 + i;
+                _dict.Add(key, "Hello " + key);
+                Check.That(_dict[key]).IsEqualTo("Hello " + key);
+            }            
         }
 
         [Test]
         public void TestReplace()
         {
-            
+            _dict.Add(1, "Hello");
+
+            _dict[1] = "Goodbye";
+
+            Check.That(_dict.Count).IsEqualTo(1);
+            Check.That(_dict[1]).IsEqualTo("Goodbye");
         }
 
         [Test]
         public void TestRemove()
         {
-            
+            _dict.Add(1, "Hello");
+            Check.That(_dict.Count).IsEqualTo(1);
+            _dict.Remove(1);
+            Check.That(_dict.Count).IsEqualTo(0);
+        }
+
+        [Test]
+        public void TestClear()
+        {
+            TestAdding();
+            _dict.Clear();
+
+            Check.That(_dict.Count).IsZero();
+            Check.ThatCode(() => _dict[1]).Throws<KeyNotFoundException>();
         }
     }
 
@@ -215,9 +252,9 @@ namespace CleanCollections.Tests
                 _buckets.Add(-1);
             }
 
-            for (int i = oldCapacity - 1; i >= 0; i--)
+            for (int bucketIndex = oldCapacity - 1; bucketIndex >= 0; bucketIndex--)
             {
-                var slotIndex = _buckets[i];
+                var slotIndex = _buckets[bucketIndex];
                 if (slotIndex <= 0) continue;
                 
                 int previous = -1;
@@ -226,11 +263,9 @@ namespace CleanCollections.Tests
                     var currentSlot = _entries[current];
                     var next = currentSlot.Next;
 
-                    var newBucket = GetBucket(currentSlot.HashCode);
-                    if (newBucket != i)
-                    {
-                        MoveSlotFromBucket(newBucket, current, previous, currentSlot, i);
-                    }
+                    var newBucketIndex = GetBucket(currentSlot.HashCode);
+                    if (newBucketIndex != bucketIndex)
+                        MoveSlotFromBucket(newBucketIndex, current, previous, currentSlot, bucketIndex);
 
                     previous = current;
                     current = next;
@@ -265,6 +300,8 @@ namespace CleanCollections.Tests
         /// <returns></returns>
         private bool RemoveItem(TKey key, out TValue value)
         {
+            if (_size <= 0) ThrowKeyNotFound(key);
+
             value = default(TValue);
             return false;
         }
@@ -274,7 +311,9 @@ namespace CleanCollections.Tests
         /// </summary>
         public void Clear()
         {
-            throw new NotImplementedException();
+            _buckets.Clear();
+            _entries.Clear();
+            _size = 0;
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
@@ -328,6 +367,8 @@ namespace CleanCollections.Tests
         /// <returns></returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
+            if (_size <= 0) ThrowKeyNotFound(key);
+
             value = default(TValue);
             var hashcode = GetKeyHashcode(key);
             var bucket = GetBucket(hashcode);
@@ -345,6 +386,11 @@ namespace CleanCollections.Tests
 
             value = slot.Value;
             return true;
+        }
+
+        private void ThrowKeyNotFound(TKey key)
+        {
+            throw new KeyNotFoundException(string.Format("Key {0} not found", key));
         }
 
         private static int GetKeyHashcode(TKey key)

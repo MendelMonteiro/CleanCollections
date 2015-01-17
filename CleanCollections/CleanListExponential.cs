@@ -137,7 +137,11 @@ namespace CleanCollections
         public void Clear()
         {
             _count = 0;
-            // TODO: clear all elements?
+
+            foreach (var subArray in _subArrays)
+            {
+                if (subArray != null) Array.Clear(subArray, 0, subArray.Length);
+            }
         }
 
         public bool Contains(T item)
@@ -176,7 +180,9 @@ namespace CleanCollections
             var absoluteIndex = GetIndex(index);
             _deletedIndeces.Push(absoluteIndex);
             _count--;
-            // TODO: set value to default(T) ?
+
+            // Set value to default(T)
+            _subArrays[absoluteIndex.ChunkIndex][absoluteIndex.LocalIndex] = default(T);
         }
 
         private ChunkedIndex GetIndex(int index)
@@ -202,7 +208,7 @@ namespace CleanCollections
 
         private void CheckIndex(int index)
         {
-            if (index < (uint)0 || (uint)index > (uint)Count - 1) throw new IndexOutOfRangeException();
+            if (_count == 0 || index < (uint)0 || (uint)index > (uint)_count - 1) throw new IndexOutOfRangeException();
         }
     }
 }

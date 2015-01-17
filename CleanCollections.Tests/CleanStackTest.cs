@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using NFluent;
+using NUnit.Framework;
 
 namespace CleanCollections.Tests
 {
@@ -42,6 +45,18 @@ namespace CleanCollections.Tests
                 Assert.AreEqual(j, item);
                 j++;
             }
+        }
+
+        [Test]
+        public void TestClear()
+        {
+            var stack = new CleanStack<string> (1024, 128);
+
+            stack.Push("blah");
+            stack.Clear();
+
+            Check.That(stack).IsEmpty();
+            Check.ThatCode(() => stack.Pop()).Throws<InvalidOperationException>();
         }
 
         [Test]

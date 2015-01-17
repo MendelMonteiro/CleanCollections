@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NFluent;
+using NUnit.Framework;
 
 namespace CleanCollections.Tests
 {
@@ -47,6 +49,17 @@ namespace CleanCollections.Tests
             var list = new CleanListDoubling<int>(length, 4);
 
             list.TestListEnumerator(length);
+        }
+
+        [Test]
+        public void TestClear()
+        {
+            var list = new CleanListDoubling<int>(1024, 4);            
+            list.Add(1);
+            list.Clear();
+
+            Check.That(list.Count).IsEqualTo(0);
+            Check.ThatCode(() => list[0]).Throws<IndexOutOfRangeException>();
         }
     }
 }
