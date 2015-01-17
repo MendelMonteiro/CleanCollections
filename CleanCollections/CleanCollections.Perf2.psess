@@ -104,6 +104,12 @@
     <Report>
       <Path>CleanCollections.Perf150117.vspx</Path>
     </Report>
+    <Report>
+      <Path>CleanCollections.Perf150117(1).vspx</Path>
+    </Report>
+    <Report>
+      <Path>CleanCollections.Perf150117(2).vspx</Path>
+    </Report>
   </Reports>
   <Launches>
     <ProjBinary>

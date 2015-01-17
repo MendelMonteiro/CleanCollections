@@ -23,11 +23,11 @@ namespace CleanCollections
         private int _capacity;
         private bool _isInitialised;
 
-        public CleanDictionary(int initialCapcity, int blockSize = 16, int maxSize = int.MaxValue)
+        public CleanDictionary(int initialCapcity, int maxSize = int.MaxValue, int blockSize = 16)
         {
             _capacity = initialCapcity;
-            _buckets = new CleanListDoubling<int>(maxSize, blockSize);
-            _entries = new CleanListDoubling<Entry>(maxSize, blockSize);
+            _buckets = new CleanListDoubling<int>(maxSize * 2, initialCapcity, 512);
+            _entries = new CleanListDoubling<Entry>(maxSize, initialCapcity, 512);
             Initialise();
         }
 
@@ -47,7 +47,7 @@ namespace CleanCollections
         }
 
         /// <summary>
-        /// Setup the buck
+        /// Setup the buckets
         /// </summary>
         private void Initialise()
         {
@@ -184,6 +184,7 @@ namespace CleanCollections
         {
             var oldCapacity = _capacity;
             _capacity = oldCapacity * 2;
+//            _buckets.SetRange(oldCapacity, _capacity, -1);
             for (int i = oldCapacity; i < _capacity; i++)
             {
                 _buckets.Add(-1);

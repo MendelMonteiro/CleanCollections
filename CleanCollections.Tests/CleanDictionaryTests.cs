@@ -152,19 +152,40 @@ namespace CleanCollections.Tests
         [Test, Explicit]
         public void TestPerformanceVsDictionary()
         {
-            const int maxSize = 1024 * 1024;
-//            RunPerfTest(maxSize);
-//        }
+            const int maxSize = 3 * 1024 * 1024;
+            //            RunPerfTest(maxSize);
+            //        }
 
-//        private static void RunPerfTest(int maxSize)
-//        {
-            var clean = new CleanDictionary<int, int>(16, maxSize: maxSize);
-            var dirty = new Dictionary<int, int>(16);
+            //        private static void RunPerfTest(int maxSize)
+            //        {
+            var clean = new CleanDictionary<int, int>(1024, maxSize);
+            var dirty = new Dictionary<int, int>(1024);
 
+            RunPerfOperation(maxSize, dirty, clean, (ints, i) => ints.Add(i, i), (ints, i) => ints.Add(i, i), "add/grow");
+
+            RunPerfOperation(maxSize, dirty, clean, (ints, i) => ints.Remove(i), (ints, i) => ints.Remove(i), "remove");
+
+            RunPerfOperation(maxSize, dirty, clean, (ints, i) => ints.Add(i, i), (ints, i) => ints.Add(i, i), "add");
+
+            RunPerfOperation(maxSize, dirty, clean,
+                             (ints, i) =>
+                             {
+                                 var x = ints[i];
+                             },
+                             (ints, i) =>
+                             {
+                                 var x = ints[i];
+                             }, "index");
+
+            RunPerfOperation(maxSize, dirty, clean, (ints, i) => ints[i] = 3, (ints, i) => ints[i] = 3, "set");
+        }
+
+        private static void RunPerfOperation(int maxSize, Dictionary<int, int> dirty, CleanDictionary<int, int> clean, Action<Dictionary<int, int>, int> dirtyAction, Action<CleanDictionary<int, int>, int> cleanAction, string operationName)
+        {
             Stopwatch watch = Stopwatch.StartNew();
             for (int i = 0; i < maxSize; i++)
             {
-                dirty.Add(i, i);
+                dirtyAction(dirty, i);
             }
             var dirtyTicks = watch.ElapsedTicks;
             Console.WriteLine(dirtyTicks);
@@ -172,12 +193,12 @@ namespace CleanCollections.Tests
             watch = Stopwatch.StartNew();
             for (int i = 0; i < maxSize; i++)
             {
-                clean.Add(i, i);
+                cleanAction(clean, i);
             }
             var cleanTicks = watch.ElapsedTicks;
             Console.WriteLine(cleanTicks);
 
-            Console.WriteLine("Clean dictionary took {0:P} more time than dirty", (double)(cleanTicks - dirtyTicks) / dirtyTicks);
+            Console.WriteLine("Clean dictionary took {0:P} more time to {1} than dirty one", (double)(cleanTicks - dirtyTicks) / dirtyTicks, operationName);
         }
 
         [Test]
