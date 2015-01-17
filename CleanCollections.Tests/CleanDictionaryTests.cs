@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using NFluent;
 using NUnit.Framework;
 
@@ -67,12 +69,12 @@ namespace CleanCollections.Tests
         [Test]
         public void TestShouldGrow()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 17; i++)
             {
                 _dict.Add(i, i.ToString());
             }
 
-            Check.That(_dict.Count).IsEqualTo(5);
+            Check.That(_dict.Count).IsEqualTo(17);
 
             for (int i = 0; i < _dict.Count; i++)
             {
@@ -145,6 +147,58 @@ namespace CleanCollections.Tests
             TestAdding();
             _dict.Clear();
             TestEmptyDictionary();
+        }
+
+        [Test, Explicit]
+        public void TestPerformanceVsDictionary()
+        {
+            const int maxSize = 1024 * 1024 - 1;
+            RunPerfTest(maxSize);
+            RunPerfTest(maxSize);
+        }
+
+        private static void RunPerfTest(int maxSize)
+        {
+            var clean = new CleanDictionary<int, int>(16, maxSize: maxSize + 1);
+            var dirty = new Dictionary<int, int>(16);
+
+            Stopwatch watch = Stopwatch.StartNew();
+            for (int i = 0; i < maxSize; i++)
+            {
+                dirty.Add(i, i);
+            }
+            var dirtyTicks = watch.ElapsedTicks;
+            Console.WriteLine(dirtyTicks);
+
+            watch = Stopwatch.StartNew();
+            for (int i = 0; i < maxSize; i++)
+            {
+                clean.Add(i, i);
+            }
+            var cleanTicks = watch.ElapsedTicks;
+            Console.WriteLine(cleanTicks);
+
+            Console.WriteLine("Clean dictionary took {0:P} more time than dirty", (double)(cleanTicks - dirtyTicks) / dirtyTicks);
+        }
+
+        [Test]
+        public void TestAllocations()
+        {
+            const int maxSize = 1024 * 1024;
+            var dict = new CleanDictionary<int, int>(16, maxSize: maxSize);
+            GCTester.Test(() =>
+                          {
+                              for (int i = 0; i < maxSize - 1; i++)
+                              {
+                                  dict.Add(i, i);
+                              }
+
+                              for (int i = 0; i < maxSize - 1; i++)
+                              {
+                                  var x = dict[i];
+                                  dict.Remove(i);
+                              }
+                          });
         }
     }
 }

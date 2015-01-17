@@ -17,8 +17,14 @@ namespace CleanCollections.Perf
 //            CleanStackTest test = new CleanStackTest();
 //            test.TestAllocations();
 
-            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
-            test.TestAllocations();
+//            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
+//            test.TestAllocations();
+
+            var dict = new CleanDictionary<int, int>(16, maxSize: 1024*1024);
+            for (int i = 0; i < 1024 * 1024-1; i++)
+            {
+                dict.Add(i, i);
+            }
 
             Console.WriteLine("Finished");
             //            Console.ReadKey(true);
