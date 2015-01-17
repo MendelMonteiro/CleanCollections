@@ -61,5 +61,23 @@ namespace CleanCollections.Tests
             Check.That(list.Count).IsEqualTo(0);
             Check.ThatCode(() => list[0]).Throws<IndexOutOfRangeException>();
         }
+
+        [Test]
+        public void TestSetRange()
+        {
+            var cleanList = new CleanListDoubling<int>(1024, 16);
+            IIndexedList<int> list = cleanList;
+            for (int i = 0; i < 1024; i++)
+            {
+                list[list.Add(i)] = 2;
+            }
+
+            cleanList.SetRange(0, 1024, 5);
+
+            for (int i = 0; i < cleanList.Count; i++)
+            {
+                Check.That(cleanList[i]).IsEqualTo(5);
+            }
+        }
     }
 }

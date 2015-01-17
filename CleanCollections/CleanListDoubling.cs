@@ -184,5 +184,60 @@ namespace CleanCollections
             if (_count == 0 || index < (uint)0 || (uint)index > (uint)_count - 1) throw new IndexOutOfRangeException();
         }
 
+        #region Test methods for bypassing repeated Add() calls
+        public void SetRange(int startIndex, int endIndex, T value)
+        {
+            var index = startIndex;
+            int count = endIndex - index;
+
+            while (count >= 0 && index < _count)
+            {
+                short chunkIndex;
+                int localIndex;
+                GetChunkedIndex(index, out chunkIndex, out localIndex);
+
+                var length = _subArrays[chunkIndex].Length;
+                int i;
+                for (i = localIndex; i < length && count >= 0; i++)
+                {
+                    _subArrays[chunkIndex][i] = value;
+
+                    count--;
+                }
+
+                index += i;
+            }
+        }
+
+        public void AddMultiple(int addCount, T value)
+        {
+            var extraCapacity = addCount - _deletedIndeces.Count;
+            if (extraCapacity > 0) ExpandCapacityTo(_count + extraCapacity);
+
+            // Use existing entry that was deleted
+            while (_deletedIndeces.Count > 0)
+            {
+                var nextFreeIndex = _deletedIndeces.Pop();
+                _subArrays[nextFreeIndex.ChunkIndex][nextFreeIndex.LocalIndex] = value;
+                _count++;
+                addCount--;
+            }
+
+            if (addCount > 0)
+            {
+                var count = _count;
+                _count += addCount;
+                SetRange(count, count + addCount, value);
+            }
+        }
+
+        private void ExpandCapacityTo(int capacity)
+        {
+            while (_capacity < capacity)
+            {
+                Grow(_blockSize);
+            }
+        }
+        #endregion
     }
 }

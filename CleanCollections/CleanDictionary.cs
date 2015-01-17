@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace CleanCollections
 {
@@ -184,7 +185,8 @@ namespace CleanCollections
         {
             var oldCapacity = _capacity;
             _capacity = oldCapacity * 2;
-//            _buckets.SetRange(oldCapacity, _capacity, -1);
+
+//            _buckets.AddMultiple(_capacity - oldCapacity, -1);
             for (int i = oldCapacity; i < _capacity; i++)
             {
                 _buckets.Add(-1);
