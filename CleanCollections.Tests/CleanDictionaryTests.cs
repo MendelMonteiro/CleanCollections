@@ -8,11 +8,13 @@ namespace CleanCollections.Tests
     class CleanDictionaryTests
     {
         private CleanDictionary<int, string> _dict;
+        private CleanDictionary<string, int> _reverseDict;
 
         [SetUp]
         public void Setup()
         {
             _dict = new CleanDictionary<int, string>(4, maxSize: 1024);
+            _reverseDict = new CleanDictionary<string, int>(4, maxSize: 1024);
         }
 
         [Test]
@@ -22,6 +24,42 @@ namespace CleanCollections.Tests
             {
                 _dict.Add(i, "Hello " + i);
                 Check.That(_dict.Count).IsEqualTo(i);
+                Check.That(_dict[i]).IsEqualTo("Hello " + i);
+            }
+        }
+
+        [Test]
+        public void TestAddingStrings()
+        {
+            for (int i = 1; i < 1023; i++)
+            {
+                var str = "Hello " + i;
+                _reverseDict.Add(str, i);
+                Check.That(_reverseDict.Count).IsEqualTo(i);
+                Check.That(_reverseDict[str]).IsEqualTo(i);
+            }
+        }
+
+        [Test]
+        public void TestAddingNegativeNumbers()
+        {
+            for (int i = 1; i < 1023; i++)
+            {
+                _dict.Add(-i, "Hello " + i);
+                Check.That(_dict.Count).IsEqualTo(i);
+                Check.That(_dict[-i]).IsEqualTo("Hello " + i);
+            }
+        }
+
+        [Test]
+        public void TestAddingDescendingNumbers()
+        {
+            int count = 0;
+            for (int i = 1023; i > 0; i--)
+            {
+                _dict.Add(i, "Hello " + i);
+                count++;
+                Check.That(_dict.Count).IsEqualTo(count);
                 Check.That(_dict[i]).IsEqualTo("Hello " + i);
             }
         }

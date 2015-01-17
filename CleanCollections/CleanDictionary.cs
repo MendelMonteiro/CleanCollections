@@ -73,19 +73,21 @@ namespace CleanCollections
             var bucket = GetBucket(hashcode);
 
             // New slot in new bucket
-            if (_buckets[bucket] < 0)
+            var slotIndex = _buckets[bucket];
+            if (slotIndex < 0)
             {
-                _buckets[bucket] = AddNewSlot(key, value, hashcode, ref bucket);
+                var newSlot = AddNewSlot(key, value, hashcode, ref bucket);
+                AddItemToBucket(bucket, newSlot);
                 return;
             }
 
             Entry slot;
-            for (slot = _entries[bucket]; !_comparer.Equals(key, slot.Key); slot = _entries[slot.Next])
+            for (slot = _entries[slotIndex]; !_comparer.Equals(key, slot.Key); slot = _entries[slot.Next], slotIndex = slot.Next)
             {
                 // New slot in existing bucket
                 if (slot.Next == -1)
                 {
-                    NewSlotInExistingBucket(key, value, bucket, hashcode, slot);
+                    NewSlotInExistingBucket(key, value, bucket, slotIndex, hashcode, slot);
                     return;
                 }
             }
@@ -93,17 +95,34 @@ namespace CleanCollections
             // Replacing slot with new value for same key
             slot.Value = value;
             slot.Key = key; // Need to overwrite the key?
-            _entries[bucket] = slot;
+            _entries[slotIndex] = slot;
         }
 
-        private void NewSlotInExistingBucket(TKey key, TValue value, int bucket, int hashcode, Entry slot)
+        private void NewSlotInExistingBucket(TKey key, TValue value, int bucket, int slotIndex, int hashcode, Entry slot)
         {
-            var previousBucket = bucket;
-            slot.Next = AddNewSlot(key, value, hashcode, ref bucket);
-            if (bucket == previousBucket)
-                _entries[previousBucket] = slot;
-            else
-                _buckets[bucket] = slot.Next;
+            var newSlotIndex = AddNewSlot(key, value, hashcode, ref bucket);
+            AddItemToBucket(bucket, newSlotIndex);
+        }
+
+        private void AddItemToBucket(int bucket, int newSlotIndex)
+        {
+            var existingSlotIndex = _buckets[bucket];
+            if (existingSlotIndex < 0) // No existing items in bucket
+            {
+                _buckets[bucket] = newSlotIndex;
+            }
+            else // Set the new item as the next item of the last existing item in the list
+            {
+                Entry existing = _entries[existingSlotIndex];
+                while (existing.Next >= 0)
+                {
+                    existingSlotIndex = existing.Next;
+                    existing = _entries[existingSlotIndex];
+                }
+
+                existing.Next = newSlotIndex;
+                _entries[existingSlotIndex] = existing;
+            }
         }
 
         private int AddNewSlot(TKey key, TValue value, int hashcode, ref int bucket)
@@ -153,7 +172,7 @@ namespace CleanCollections
 
         private int GetBucket(int hashcode)
         {
-            return hashcode % _capacity;
+            return (hashcode & int.MaxValue) % _capacity;
         }
 
         /// <summary>
