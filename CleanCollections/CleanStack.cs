@@ -60,7 +60,7 @@ namespace CleanCollections
             
             if (headLocalIndex >= _subArrays[headChunkIndex].Length)
             {
-                localIndex = _headLocalIndex = 0;
+                localIndex = 0;
                 return ++headChunkIndex;
             }
             

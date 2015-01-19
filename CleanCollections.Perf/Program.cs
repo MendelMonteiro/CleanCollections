@@ -13,6 +13,8 @@
 //   limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CleanCollections.Perf
 {
@@ -32,12 +34,43 @@ namespace CleanCollections.Perf
 //            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
 //            test.TestAllocations();
             
-            TestDictionary();
-            TestDictionary();
+//            TestDictionary();
+//            TestDictionary();
+
+            TestStack();
 
             Console.WriteLine("Finished");
             //            Console.ReadKey(true);
         }
+
+        public static void TestStack()
+        {
+            Stack<int> stack = new Stack<int>();
+            var iterations = 5 * 1024 * 1024;
+            CleanStack<int> cleanStack = new CleanStack<int>(iterations, 8192);
+
+            Stopwatch watch = Stopwatch.StartNew();
+            for (int i = 0; i < iterations; i++)
+            {
+                cleanStack.Push(i);
+            }
+            TestSuite.PrintTimeTaken("Push", iterations, watch);
+
+            watch.Restart();
+            foreach (var i in cleanStack)
+            {
+                var x = i;
+            }
+            TestSuite.PrintTimeTaken("Iterate", iterations, watch);
+
+            watch.Restart();
+            for (int i = 0; i < iterations; i++)
+            {
+                cleanStack.Pop();
+            }
+            TestSuite.PrintTimeTaken("Push", iterations, watch);
+        }
+
 
         private static void TestDictionary()
         {

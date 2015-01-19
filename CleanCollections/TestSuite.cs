@@ -72,6 +72,11 @@ namespace CleanCollections
             }
             watch.Stop();
 
+            PrintTimeTaken(type, length, watch);
+        }
+
+        public static void PrintTimeTaken(string type, int length, Stopwatch watch)
+        {
             var nsPerItem = (double) watch.ElapsedTicks*1000*1000*1000/Stopwatch.Frequency/length;
             Console.WriteLine("{2} took {0:N} ms ({1:N} ns per item)", watch.ElapsedMilliseconds, nsPerItem, type);
         }
