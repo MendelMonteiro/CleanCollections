@@ -38,6 +38,7 @@ namespace CleanCollections.Perf
 //            TestDictionary();
 
             TestStack();
+            TestNetStack();
 
             Console.WriteLine("Finished");
             //            Console.ReadKey(true);
@@ -45,7 +46,7 @@ namespace CleanCollections.Perf
 
         public static void TestStack()
         {
-            Stack<int> stack = new Stack<int>();
+            Console.WriteLine("CleanStack");
             var iterations = 5 * 1024 * 1024;
             CleanStack<int> cleanStack = new CleanStack<int>(iterations, 8192);
 
@@ -71,6 +72,33 @@ namespace CleanCollections.Perf
             TestSuite.PrintTimeTaken("Push", iterations, watch);
         }
 
+        public static void TestNetStack()
+        {
+            Console.WriteLine(".NET Stack");
+            var iterations = 5 * 1024 * 1024;
+            Stack<int> cleanStack = new Stack<int>();
+
+            Stopwatch watch = Stopwatch.StartNew();
+            for (int i = 0; i < iterations; i++)
+            {
+                cleanStack.Push(i);
+            }
+            TestSuite.PrintTimeTaken("Push", iterations, watch);
+
+            watch.Restart();
+            foreach (var i in cleanStack)
+            {
+                var x = i;
+            }
+            TestSuite.PrintTimeTaken("Iterate", iterations, watch);
+
+            watch.Restart();
+            for (int i = 0; i < iterations; i++)
+            {
+                cleanStack.Pop();
+            }
+            TestSuite.PrintTimeTaken("Push", iterations, watch);
+        }
 
         private static void TestDictionary()
         {
