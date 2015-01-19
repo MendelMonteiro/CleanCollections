@@ -30,6 +30,8 @@ namespace CleanCollections
         private int _count;
         private int _capacity;
         private readonly int _blockPowerOfTwo;
+        private short _headChunkIndex;
+        private int _headLocalIndex = -1;
 
         public CleanStack(int maxSize, int blockSize)
         {
@@ -46,11 +48,23 @@ namespace CleanCollections
         {
             EnsureCapacity();
 
-            short chunkIndex = (short)(_count >> _blockPowerOfTwo);
-            int localIndex = _count - (chunkIndex * _blockSize);
+            _headChunkIndex = GetNextChunkAndLocalIndex(_headChunkIndex, _headLocalIndex, out _headLocalIndex);
 
-            _subArrays[chunkIndex][localIndex] = item;
+            _subArrays[_headChunkIndex][_headLocalIndex] = item;
             _count++;
+        }
+
+        private short GetNextChunkAndLocalIndex(short headChunkIndex, int headLocalIndex, out int localIndex)
+        {
+            localIndex = ++headLocalIndex;
+            
+            if (headLocalIndex >= _subArrays[headChunkIndex].Length)
+            {
+                localIndex = _headLocalIndex = 0;
+                return ++headChunkIndex;
+            }
+            
+            return headChunkIndex;
         }
 
         private void EnsureCapacity()
@@ -69,12 +83,28 @@ namespace CleanCollections
 
             short chunkIndex;
             int localIndex;
-            var item = GetItem(_count - 1, out chunkIndex, out localIndex);
+            var item = GetCurrentItem(out chunkIndex, out localIndex);
 
             // Set current item to default(T)
             _subArrays[chunkIndex][localIndex] = default(T);
 
             _count--;
+
+            _headLocalIndex--;
+            if (_headLocalIndex < 0 && _headChunkIndex > 0)
+            {
+                _headChunkIndex--;
+                _headLocalIndex = _subArrays[_headChunkIndex].Length - 1;
+            }
+
+            return item;
+        }
+
+        private T GetCurrentItem(out short chunkIndex, out int localIndex)
+        {
+            chunkIndex = _headChunkIndex;
+            localIndex = _headLocalIndex;
+            var item = _subArrays[chunkIndex][localIndex];
             return item;
         }
 
@@ -89,6 +119,8 @@ namespace CleanCollections
         public void Clear()
         {
             _count = 0;
+            _headChunkIndex = 0;
+            _headLocalIndex = -1;
 
             foreach (var subArray in _subArrays)
             {
@@ -118,12 +150,16 @@ namespace CleanCollections
             private readonly CleanStack<T> _stack;
             private T _current;
             private int _index;
+            private short _chunkIndex;
+            private int _localIndex;
 
             public Enumerator(CleanStack<T> stack)
             {
-                _index = -1;
+                _index = 0;
                 _stack = stack;
                 _current = default(T);
+                _chunkIndex = 0;
+                _localIndex = -1;
             }
 
             public void Dispose()
@@ -132,14 +168,13 @@ namespace CleanCollections
 
             public bool MoveNext()
             {
-                bool beforeEnd = _index + 1 < _stack.Count;
+                bool beforeEnd = _index < _stack.Count;
 
                 if (beforeEnd)
                 {
                     _index++;
-                    short chunkIndex;
-                    int localIndex;
-                    _current = _stack.GetItem(_index, out chunkIndex, out localIndex);
+                    _chunkIndex = _stack.GetNextChunkAndLocalIndex(_chunkIndex, _localIndex, out _localIndex);
+                    _current = _stack._subArrays[_chunkIndex][_localIndex];
                 }
 
                 return beforeEnd;
@@ -147,7 +182,9 @@ namespace CleanCollections
 
             public void Reset()
             {
-                _index = -1;
+                _index = 0;
+                _chunkIndex = 0;
+                _localIndex = -1;
             }
 
             public T Current { get { return _current; } private set { _current = value; } }

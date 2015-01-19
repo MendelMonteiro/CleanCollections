@@ -32,22 +32,28 @@ namespace CleanCollections.Perf
 //            CleanListIncrementalTest test = new CleanListIncrementalTest(); 
 //            test.TestAllocations();
             
-            var iterations = 5 * 1024 * 1024;
+            TestDictionary();
+            TestDictionary();
+
+            Console.WriteLine("Finished");
+            //            Console.ReadKey(true);
+        }
+
+        private static void TestDictionary()
+        {
+            var iterations = 5*1024*1024;
             var dict = new CleanDictionary<int, int>(4, iterations, 512);
             for (int i = 0; i < iterations; i++)
             {
                 dict.Add(i, i);
             }
 
-            Console.ReadKey();
+//            Console.ReadKey();
 
             for (int i = 0; i < iterations; i++)
             {
                 var x = dict[i];
             }
-
-            Console.WriteLine("Finished");
-            //            Console.ReadKey(true);
         }
     }
 }

@@ -70,6 +70,10 @@ namespace CleanCollections.Tests
 
             Check.That(stack).IsEmpty();
             Check.ThatCode(() => stack.Pop()).Throws<InvalidOperationException>();
+
+            stack.Push("foo");
+            Check.That(stack.Count).IsEqualTo(1);
+            Check.That(stack.Pop()).IsEqualTo("foo");
         }
 
         [Test]
