@@ -1,7 +1,7 @@
 CleanCollections
 ================
 
-List, Dictionary and Stack which do not add GC pressure when performing any operation.
+List, Dictionary and Stack which do not add any GC pressure when performing operations.
 
 Operations should have the same order of complexity as in their BCL counterparts.
 
@@ -25,5 +25,6 @@ TODO:
 
 2. Lists
   - Should access by index offset to take into account deleted items or not? (potential impact on perf)
+  - GetElementAt(int index)
 
-3 Queue
+3. Queue
