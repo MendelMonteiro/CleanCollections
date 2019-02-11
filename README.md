@@ -20,11 +20,11 @@ Licensed under the Apache License 2.0.
 TODO: 
 
 1. Dictionary
-  - Enumerator
-  - What is the memory locality impact of using reference type Entries as opposed to value types (assuming we fill with new instances when growing)?
+    - Enumerator
+    - What is the memory locality impact of using reference type Entries as opposed to value types (assuming we fill with new instances when growing)?
 
 2. Lists
-  - Should access by index offset to take into account deleted items or not? (potential impact on perf)
-  - GetElementAt(int index)
+    - Should access by index offset to take into account deleted items or not? (potential impact on perf)
+    - GetElementAt(int index)
 
 3. Queue
