@@ -1,7 +1,7 @@
 CleanCollections
 ================
 
-List, Dictionary and Stack which do only allocate and do not de-reference memory when performing operations.
+List, Dictionary and Stack which only allocate and do not de-reference memory when performing operations.
 
 Operations should have the same order of complexity as in their BCL counterparts.
 
